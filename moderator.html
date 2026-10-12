@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex">
+<title>Panel Moderator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try { var t = localStorage.getItem("madinganon.theme"); if (t) document.documentElement.setAttribute("data-theme", JSON.parse(t)); } catch (e) {}</script>
+</head>
+<body class="modpage">
+<div class="bar" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="topactions">
+      <button type="button" class="themebtn" id="themeBtn" aria-pressed="false">Mode gelap</button>
+      <button type="button" class="themebtn" id="logoutBtn" hidden>Keluar</button>
+    </div>
+    <div class="city">Khusus moderator (demo)</div>
+    <h1>Panel Moderator</h1>
+    <p>Setujui pesan baru dan tinjau pesan yang dilaporkan.</p>
+    <p class="backlink"><a href="index.html">← Kembali ke Mading</a></p>
+  </header>
+
+  <section class="gate" id="gate">
+    <h2 class="panel-title">Masuk moderator</h2>
+    <form class="modlogin" id="modLogin">
+      <label for="modCode">Kode moderator</label>
+      <input type="password" id="modCode" autocomplete="off" maxlength="40">
+      <button type="submit" class="btn small">Masuk</button>
+      <p class="err" id="modErr" role="alert"></p>
+    </form>
+    <p class="mempty">Kode diberikan oleh pengelola. Ini versi demo: kode dicek di browser, bukan di server.</p>
+  </section>
+
+  <section id="dash" hidden>
+    <div class="mstats" id="mstats"></div>
+    <div class="mcols">
+      <section>
+        <h2 class="panel-title" id="pendTitle">Menunggu persetujuan</h2>
+        <ul class="mlist" id="pendList"></ul>
+      </section>
+      <section>
+        <h2 class="panel-title" id="repTitle">Dilaporkan</h2>
+        <ul class="mlist" id="repList"></ul>
+      </section>
+    </div>
+    <p class="mempty note-data">Data diambil dari browser ini. Pesan yang dikirim dari browser atau perangkat lain belum muncul di sini, karena belum ada server.</p>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script src="shared.js"></script>
+<script src="moderator.js"></script>
+</body>
+</html>

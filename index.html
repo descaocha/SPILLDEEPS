@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f5f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090a" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Papan pesan anonim sekitar kampus: curhat, cari barang hilang, info, dan tanya-tanya tanpa menyebut nama.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mading Anon">
+<meta property="og:description" content="Curhat, cari barang hilang, dan tanya-tanya soal kampus tanpa menyebut nama.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f0f10'/%3E%3Cpath d='M14 46V18h8l10 14 10-14h8v28h-8V32L32 46 22 32v14z' fill='%23d4ff3a'/%3E%3C/svg%3E">
+<title>Mading Anon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try { var t = localStorage.getItem("madinganon.theme"); if (t) document.documentElement.setAttribute("data-theme", JSON.parse(t)); } catch (e) {}</script>
+</head>
+<body>
+<div class="bar" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <button type="button" class="themebtn" id="themeBtn" aria-pressed="false">Mode gelap</button>
+    <div class="city" id="campusName"></div>
+    <h1>Mading Anon</h1>
+    <p>Curhat, cari barang yang hilang, dan tanya-tanya soal kampus tanpa menyebut nama.</p>
+    <button class="btn jump" id="jumpBtn" type="button">Tulis pesan</button>
+  </header>
+
+  <div class="notice"><strong>Proyek latihan mahasiswa.</strong> Ini bukan akun menfess resmi dan tidak berafiliasi dengan universitas atau akun mana pun. Pesan-pesan pertama adalah contoh. Pesan yang kamu tulis tersimpan di browser ini saja.</div>
+
+  <div class="layout">
+    <main>
+      <h2 class="panel-title">Pesan terbaru</h2>
+      <input type="search" id="q" class="search" placeholder="Cari pesan, misalnya helm atau kunci" aria-label="Cari pesan">
+      <div class="filters" id="catFilters" role="group" aria-label="Filter kategori"></div>
+      <div class="sortrow">
+        <label for="sortBy">Urutkan</label>
+        <select id="sortBy">
+          <option value="new">Terbaru</option>
+          <option value="relate">Paling banyak relate</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="hideDone"> Sembunyikan yang sudah ketemu</label>
+      </div>
+      <ul class="list" id="list"></ul>
+    </main>
+
+    <aside class="formbox" id="formbox">
+      <h2 class="panel-title">Tulis pesan</h2>
+      <form id="postForm" novalidate>
+        <label for="fCat">Kategori
+          <select id="fCat"></select>
+        </label>
+        <label for="fFak">Asal fakultas <small>(opsional)</small>
+          <select id="fFak"></select>
+        </label>
+        <label for="fMsg">Pesanmu
+          <textarea id="fMsg" maxlength="500" placeholder="Contoh: Helm hitam hilang di parkiran FT, ciri-cirinya..."></textarea>
+          <small id="counter">0 / 500</small>
+        </label>
+        <label for="fPhoto">Foto <small>(opsional)</small>
+          <input type="file" id="fPhoto" accept="image/*">
+        </label>
+        <div class="pvwrap" id="pvwrap" hidden>
+          <img id="preview" class="preview" alt="Pratinjau foto yang akan dikirim">
+          <button type="button" class="link" id="rmPhoto">Hapus foto</button>
+        </div>
+        <ul class="rules">
+          <li>Jangan menulis nomor HP, tautan, atau akun media sosial.</li>
+          <li>Tutup wajah orang, plat nomor, dan data di kartu sebelum mengunggah foto.</li>
+          <li>Jangan menyebut nama lengkap atau NIM orang lain.</li>
+          <li>Untuk barang hilang, minta penemu menitipkan ke pos satpam.</li>
+        </ul>
+        <p class="err" id="formErr" role="alert"></p>
+        <button class="btn" type="submit">Kirim anonim</button>
+      </form>
+    </aside>
+  </div>
+
+  <section class="aturan" id="aturan">
+    <h2 class="panel-title">Aturan dan privasi</h2>
+    <details open>
+      <summary>Aturan menulis</summary>
+      <ul>
+        <li>Jangan menulis nomor HP, tautan, atau akun media sosial.</li>
+        <li>Jangan menyebut nama lengkap atau NIM orang lain.</li>
+        <li>Jangan menyerang, melecehkan, atau membuka aib orang.</li>
+        <li>Jangan mengunggah foto wajah orang tanpa izin. Tutup plat nomor dan data di kartu.</li>
+        <li>Pesan yang dilaporkan 3 kali disembunyikan otomatis dan ditinjau moderator. Pesan yang melanggar dihapus.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Apa yang disimpan</summary>
+      <ul>
+        <li>Tidak ada akun dan tidak ada login. Kode "Anon #xxxx" dibuat acak dan tidak terkait identitasmu.</li>
+        <li>Di versi latihan ini, semua pesan, balasan, dan foto hanya tersimpan di browser kamu sendiri dan tidak dikirim ke server mana pun.</li>
+        <li>Foto diperkecil otomatis dan data lokasi di dalam foto dihapus sebelum ditampilkan.</li>
+        <li>Kalau nanti dibuat versi dengan server, kebijakan ini harus diperbarui dan pengguna diberi tahu data apa yang disimpan.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Tentang Mading Anon</summary>
+      <p>Mading Anon adalah tugas kuliah dan tidak berafiliasi dengan universitas, fakultas, atau akun menfess mana pun. Untuk kehilangan karena pencurian atau kejadian serius, lapor langsung ke satpam fakultas atau pihak berwenang.</p>
+    </details>
+  </section>
+
+  <footer>
+    <div class="wordmark" aria-hidden="true">Mading Anon</div>
+    <div class="footcols">
+      <p>Mading Anon adalah tugas kuliah. Kalau kamu sedang tidak baik-baik saja, bicaralah dengan orang yang kamu percaya atau layanan konseling kampusmu. Kalau barangmu dicuri, lapor ke satpam fakultas dan polisi.</p>
+      <p class="footlinks"><button type="button" class="link" id="rulesBtn">Lihat aturan dan privasi</button><a href="moderator.html">Moderator</a></p>
+    </div>
+  </footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script src="shared.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

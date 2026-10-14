@@ -34,7 +34,7 @@
       <button type="submit" class="btn small">Masuk</button>
       <p class="err" id="modErr" role="alert"></p>
     </form>
-    <p class="mempty">Kode diberikan oleh pengelola. Ini versi demo: kode dicek di browser, bukan di server.</p>
+    <p class="mempty">Kode diberikan oleh pengelola dan dicek oleh server.</p>
   </section>
 
   <section id="dash" hidden>
@@ -49,10 +49,11 @@
         <ul class="mlist" id="repList"></ul>
       </section>
     </div>
-    <p class="mempty note-data">Data diambil dari browser ini. Pesan yang dikirim dari browser atau perangkat lain belum muncul di sini, karena belum ada server.</p>
+    <p class="mempty note-data">Daftar ini diperbarui otomatis tiap 20 detik dan memuat pesan dari semua pengunjung.</p>
   </section>
 </div>
 <div class="toast" id="toast" hidden></div>
+<script src="config.js"></script>
 <script src="shared.js"></script>
 <script src="moderator.js"></script>
 </body>

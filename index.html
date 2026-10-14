@@ -91,9 +91,9 @@
       <summary>Apa yang disimpan</summary>
       <ul>
         <li>Tidak ada akun dan tidak ada login. Kode "Anon #xxxx" dibuat acak dan tidak terkait identitasmu.</li>
-        <li>Di versi latihan ini, semua pesan, balasan, dan foto hanya tersimpan di browser kamu sendiri dan tidak dikirim ke server mana pun.</li>
-        <li>Foto diperkecil otomatis dan data lokasi di dalam foto dihapus sebelum ditampilkan.</li>
-        <li>Kalau nanti dibuat versi dengan server, kebijakan ini harus diperbarui dan pengguna diberi tahu data apa yang disimpan.</li>
+        <li>Pesan, balasan, dan foto disimpan di database server supaya bisa dilihat semua orang. Foto diperkecil dan data lokasi di dalamnya dihapus.</li>
+        <li>Alamat IP tidak disimpan apa adanya. Hanya versi acaknya (hash) yang dipakai untuk membatasi jumlah kiriman dan laporan.</li>
+        <li>Pesanmu hanya bisa kamu hapus dari browser yang sama dengan yang kamu pakai untuk mengirimnya, karena tidak ada akun.</li>
       </ul>
     </details>
     <details>
@@ -111,6 +111,7 @@
   </footer>
 </div>
 <div class="toast" id="toast" hidden></div>
+<script src="config.js"></script>
 <script src="shared.js"></script>
 <script src="script.js"></script>
 </body>

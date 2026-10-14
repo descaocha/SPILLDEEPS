@@ -1,6 +1,5 @@
 /* Halaman publik Mading Anon (index.html). Butuh shared.js. */
 (function () {
-  var CAMPUS = "Sekitar kampus Tembalang"; // ganti kalau mau kampus lain
   var POST_LIMIT = 3, REPLY_LIMIT = 10, WINDOW_MS = 60 * 60 * 1000; // batas kirim per jam per browser
 
   var K = MA.K, load = MA.load, save = MA.save, esc = MA.esc, dateLabel = MA.dateLabel;
@@ -31,7 +30,6 @@
     return "";
   }
 
-  $("campusName").textContent = CAMPUS;
   $("fCat").innerHTML = Object.keys(CATS).map(function (k) { return '<option value="' + k + '">' + esc(CATS[k]) + "</option>"; }).join("");
   $("fFak").innerHTML = '<option value="">Tidak disebutkan</option>' + FAK.map(function (a) { return "<option>" + esc(a) + "</option>"; }).join("");
 
@@ -40,6 +38,7 @@
     Object.keys(CATS).forEach(function (k) {
       html += '<button type="button" class="chip" data-cat="' + k + '" aria-pressed="' + (f.cat === k) + '">' + esc(CATS[k]) + "</button>";
     });
+    html += '<button type="button" class="chip" data-cat="done" aria-pressed="' + (f.cat === "done") + '">Sudah ketemu</button>';
     $("catFilters").innerHTML = html;
   }
 
@@ -51,7 +50,7 @@
 
   function renderList() {
     var rows = S.posts.filter(function (p) {
-      return S.isPublic(p) && (f.cat === "all" || p.cat === f.cat) && matches(p) && !(f.hideDone && p.resolved);
+      return S.isPublic(p) && (f.cat === "all" || (f.cat === "done" ? p.resolved : p.cat === f.cat)) && matches(p) && !(f.hideDone && p.resolved && f.cat !== "done");
     });
     rows.sort(function (a, b) {
       if (f.sort === "relate") return S.relateOf(b) - S.relateOf(a);

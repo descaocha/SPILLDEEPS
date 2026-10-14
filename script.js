@@ -2,16 +2,16 @@
 (function () {
   var POST_LIMIT = 3, REPLY_LIMIT = 10, WINDOW_MS = 60 * 60 * 1000; // batas kirim per jam per browser
 
-  var K = MA.K, load = MA.load, save = MA.save, esc = MA.esc, dateLabel = MA.dateLabel;
+  var K = MA.K, load = MA.load, save = MA.save, esc = MA.esc, dateLabel = MA.dateLabel, api = MA.api;
   var CATS = MA.CATS, DONE_LABEL = MA.DONE_LABEL, FAK = MA.FAK;
-  var S = MA.createStore();
+  var posts = [], loaded = false, loadErr = "", working = false;
+  var relateSet = load(K.relate, {}), hidden = load(K.hidden, {}), mine = load(K.mine, {});
   var rate = load(K.rate, { posts: [], replies: [] });
   rate.posts = rate.posts || []; rate.replies = rate.replies || [];
   var openPanels = {}, confirmDel = {};
   var f = { cat: "all", sort: "new", q: "", hideDone: false };
 
   function $(id) { return document.getElementById(id); }
-  function code() { return Math.random().toString(36).slice(2, 6); }
   function canResolve(p) { return p.mine && !!DONE_LABEL[p.cat]; }
 
   // Batas kirim: kembalikan sisa menit tunggu, atau 0 kalau masih boleh
@@ -49,15 +49,19 @@
   }
 
   function renderList() {
-    var rows = S.posts.filter(function (p) {
-      return S.isPublic(p) && (f.cat === "all" || (f.cat === "done" ? p.resolved : p.cat === f.cat)) && matches(p) && !(f.hideDone && p.resolved && f.cat !== "done");
+    var rows = posts.filter(function (p) {
+      return !hidden[p.id] && (f.cat === "all" || (f.cat === "done" ? p.resolved : p.cat === f.cat)) && matches(p) && !(f.hideDone && p.resolved && f.cat !== "done");
     });
     rows.sort(function (a, b) {
-      if (f.sort === "relate") return S.relateOf(b) - S.relateOf(a);
+      if (f.sort === "relate") return b.relate - a.relate;
       return b.date < a.date ? -1 : b.date > a.date ? 1 : b.id - a.id;
     });
     // pesan yang sudah selesai turun ke bawah
     rows = rows.filter(function (p) { return !p.resolved; }).concat(rows.filter(function (p) { return p.resolved; }));
+    if (!loaded) {
+      $("list").innerHTML = '<li class="empty">' + (loadErr ? esc(loadErr) : "Memuat pesan...") + "</li>";
+      return;
+    }
     if (!rows.length) {
       $("list").innerHTML = '<li class="empty">' + (f.q || f.cat !== "all" || f.hideDone
         ? "Tidak ada pesan yang cocok. Coba kata lain atau ubah filter."
@@ -65,7 +69,7 @@
       return;
     }
     $("list").innerHTML = rows.map(function (p) {
-      var reps = S.repliesOf(p), open = !!openPanels[p.id];
+      var reps = p.replies || [], open = !!openPanels[p.id];
       var panel = "";
       if (open) {
         panel = '<div class="replies"><ul>' + (reps.length ? reps.map(function (r) {
@@ -90,7 +94,7 @@
         (p.fak ? "<span>" + esc(p.fak) + "</span>" : "") + "<span>" + dateLabel(p.date) + "</span></div>" +
         '<p class="text">' + esc(p.text) + "</p>" +
         (p.photo ? '<img class="photo" src="' + p.photo + '" alt="Foto yang dilampirkan pada pesan" loading="lazy">' : "") +
-        '<div class="foot"><button type="button" class="relate" data-act="relate" data-id="' + p.id + '" aria-pressed="' + (!!S.relateSet[p.id]) + '">Relate <span class="c">' + S.relateOf(p) + "</span></button>" +
+        '<div class="foot"><button type="button" class="relate" data-act="relate" data-id="' + p.id + '" aria-pressed="' + (!!relateSet[p.id]) + '">Relate <span class="c">' + p.relate + "</span></button>" +
         '<button type="button" class="link" data-act="toggle" data-id="' + p.id + '" aria-expanded="' + open + '">Balasan (' + reps.length + ")</button>" +
         '<span class="rside">' + side + "</span></div>" +
         panel + "</li>";
@@ -111,42 +115,57 @@
   $("q").addEventListener("input", function (e) { f.q = e.target.value.trim().toLowerCase(); renderList(); });
   $("hideDone").addEventListener("change", function (e) { f.hideDone = e.target.checked; renderList(); });
 
+  function find(id) { for (var i = 0; i < posts.length; i++) if (posts[i].id === id) return posts[i]; return null; }
+
   $("list").addEventListener("click", function (e) {
     var b = e.target.closest("[data-act]"); if (!b) return;
-    var id = Number(b.getAttribute("data-id")), act = b.getAttribute("data-act");
+    var id = Number(b.getAttribute("data-id")), act = b.getAttribute("data-act"), p = find(id);
+    if (!p) return;
+    if (act === "toggle") { openPanels[id] = !openPanels[id]; renderList(); return; }
+    if (act === "delpost" && !confirmDel[id]) { confirmDel[id] = true; renderList(); return; }
+    if (working) return;
+    var token = mine[id];
+    var job;
     if (act === "relate") {
-      if (S.relateSet[id]) delete S.relateSet[id]; else S.relateSet[id] = 1;
-      save(K.relate, S.relateSet);
-    } else if (act === "toggle") {
-      openPanels[id] = !openPanels[id];
+      var on = !relateSet[id];
+      if (on) relateSet[id] = 1; else delete relateSet[id];
+      p.relate = Math.max(0, p.relate + (on ? 1 : -1));
+      save(K.relate, relateSet); renderList();
+      api("toggle_relate", { p_post: id, p_on: on }).catch(function (er) {
+        if (on) delete relateSet[id]; else relateSet[id] = 1;
+        p.relate = Math.max(0, p.relate + (on ? -1 : 1));
+        save(K.relate, relateSet); renderList(); toast(er.message);
+      });
+      return;
     } else if (act === "resolve") {
-      var now = null;
-      S.posts.forEach(function (p) { if (p.id === id) now = !p.resolved; });
-      S.patch(id, function (p) { p.resolved = now; });
-      toast(now ? "Pesan ditandai selesai dan dipindah ke bawah." : "Pesan dibuka lagi.");
+      var now = !p.resolved;
+      job = api("owner_set_resolved", { p_post: id, p_token: token, p_resolved: now }).then(function () {
+        p.resolved = now; toast(now ? "Pesan ditandai selesai dan dipindah ke bawah." : "Pesan dibuka lagi.");
+      });
     } else if (act === "delphoto") {
-      S.patch(id, function (p) { delete p.photo; });
-      toast("Foto dihapus dari pesanmu.");
+      job = api("owner_delete_photo", { p_post: id, p_token: token }).then(function () { delete p.photo; p.photo = null; toast("Foto dihapus dari pesanmu."); });
     } else if (act === "delpost") {
-      if (!confirmDel[id]) { confirmDel[id] = true; renderList(); return; }
-      delete confirmDel[id]; delete openPanels[id];
-      S.deletePost(id);
-      toast("Pesan dihapus.");
+      job = api("owner_delete_post", { p_post: id, p_token: token }).then(function () {
+        delete confirmDel[id]; delete openPanels[id]; delete mine[id]; save(K.mine, mine);
+        posts = posts.filter(function (x) { return x.id !== id; }); toast("Pesan dihapus.");
+      });
     } else if (act === "hide") {
-      S.hidden[id] = 1; S.myReports[id] = 1;
-      save(K.hidden, S.hidden); save(K.reports, S.myReports);
-      toast("Pesan disembunyikan dari tampilanmu dan dicatat sebagai laporan.");
+      job = api("report_post", { p_post: id, p_viewer: MA.viewerId() }).then(function () {
+        hidden[id] = 1; save(K.hidden, hidden);
+        toast("Pesan disembunyikan dari tampilanmu dan dicatat sebagai laporan.");
+      });
     } else if (act === "reply") {
       var input = $("rin-" + id), text = input.value.trim();
       if (text.length < 2) { toast("Balasan terlalu pendek."); return; }
       var err = check(text); if (err) { toast(err); return; }
       var wr = waitMinutes("replies", REPLY_LIMIT);
       if (wr) { toast("Balasanmu sudah banyak dalam satu jam terakhir. Coba lagi sekitar " + wr + " menit lagi."); return; }
-      (S.userReplies[id] = S.userReplies[id] || []).push({ anon: code(), text: text });
-      stamp("replies");
-      save(K.replies, S.userReplies);
-    }
-    renderList();
+      job = api("add_reply", { p_post: id, p_text: text }).then(function (r) {
+        p.replies = (p.replies || []).concat([{ anon: r.anon, text: r.text }]); stamp("replies");
+      });
+    } else { return; }
+    working = true; b.disabled = true;
+    job.catch(function (er) { toast(er.message); }).then(function () { working = false; renderList(); });
   });
 
   $("fMsg").addEventListener("input", function (e) { $("counter").textContent = e.target.value.length + " / 500"; });
@@ -205,29 +224,40 @@
     }
     $("formErr").textContent = err;
     if (err) return;
-    var nextId = S.posts.reduce(function (m, p) { return Math.max(m, p.id); }, 0) + 1;
-    var now = new Date();
-    var iso = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-    var p = { id: nextId, cat: $("fCat").value, fak: $("fFak").value, text: text, date: iso, relate: 0, anon: code(), replies: [], mine: true, pending: MA.REQUIRE_APPROVAL };
-    if (pendingPhoto) p.photo = pendingPhoto;
-    S.posts.push(p); S.userPosts.push(p); stamp("posts");
-    var note = "";
-    if (!S.savePosts() && p.photo) {
-      var copy = {}; for (var k in p) copy[k] = p[k]; delete copy.photo;
-      S.userPosts[S.userPosts.length - 1] = copy; S.savePosts();
-      note = " Fotonya terlalu besar untuk disimpan di browser, jadi hanya tampil sampai halaman ditutup.";
-    }
-    e.target.reset(); clearPhoto(); $("counter").textContent = "0 / 500";
-    f.cat = "all"; f.sort = "new"; f.q = ""; f.hideDone = false;
-    $("sortBy").value = "new"; $("q").value = ""; $("hideDone").checked = false;
-    renderFilters(); renderList();
-    toast("Pesan terkirim sebagai Anon #" + p.anon + (p.pending ? " dan menunggu persetujuan moderator." : ".") + note);
+    if (working) return;
+    working = true;
+    var btn = e.target.querySelector("button[type=submit]"), form = e.target; btn.disabled = true;
+    var token = MA.randomToken();
+    api("create_post", { p_cat: $("fCat").value, p_fak: $("fFak").value, p_text: text, p_photo: pendingPhoto || "", p_token: token })
+      .then(function (r) {
+        mine[r.id] = token; save(K.mine, mine); stamp("posts");
+        form.reset(); clearPhoto(); $("counter").textContent = "0 / 500";
+        f.cat = "all"; f.sort = "new"; f.q = ""; f.hideDone = false;
+        $("sortBy").value = "new"; $("q").value = ""; $("hideDone").checked = false;
+        renderFilters();
+        toast("Pesan terkirim sebagai Anon #" + r.anon + (r.pending ? " dan menunggu persetujuan moderator." : "."));
+        return refresh();
+      })
+      .catch(function (er) { $("formErr").textContent = er.message; })
+      .then(function () { working = false; btn.disabled = false; renderList(); });
   });
 
-  // Kalau data berubah dari tab lain (misalnya moderator menyetujui pesan), muat ulang daftar
-  window.addEventListener("storage", function () { S = MA.createStore(); renderList(); });
+  // Ambil daftar pesan dari server, dan segarkan otomatis tiap 20 detik
+  function refresh() {
+    return api("get_feed", { p_tokens: Object.keys(mine).map(function (k) { return mine[k]; }) }).then(function (rows) {
+      posts = rows || []; loaded = true; loadErr = "";
+    }, function (er) {
+      if (!loaded) loadErr = er.message;
+    }).then(renderList);
+  }
+  setInterval(function () {
+    var a = document.activeElement;
+    if (document.hidden || working || (a && a.tagName === "INPUT" && $("list").contains(a))) return;
+    refresh();
+  }, 20000);
 
   MA.initTheme($("themeBtn"));
   renderFilters();
   renderList();
+  refresh();
 })();

@@ -1,6 +1,6 @@
 /* Halaman publik Mading Anon (index.html). Butuh shared.js. */
 (function () {
-  var POST_LIMIT = 3, REPLY_LIMIT = 10, WINDOW_MS = 60 * 60 * 1000; // batas kirim per jam per browser
+  var POST_LIMIT = 0, REPLY_LIMIT = 10, WINDOW_MS = 60 * 60 * 1000; // batas kirim per jam per browser
 
   var K = MA.K, load = MA.load, save = MA.save, esc = MA.esc, dateLabel = MA.dateLabel, api = MA.api;
   var CATS = MA.CATS, DONE_LABEL = MA.DONE_LABEL, FAK = MA.FAK;

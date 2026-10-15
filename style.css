@@ -126,6 +126,17 @@ input[type="file"] { font-size: 13px; }
 .replies { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; }
 .replies ul { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 2px solid var(--line); display: grid; gap: 6px; font-size: 14px; }
 .replies li { overflow-wrap: anywhere; }
+.replies li > ul { margin-top: 8px; padding: 0 0 0 12px; border-left: 2px solid var(--line); list-style: none; display: grid; gap: 8px; }
+.rep { display: grid; gap: 2px; }
+.ract { display: flex; gap: 10px; }
+.ract .link { font-size: 12px; padding: 2px 0; }
+.rdel { color: var(--muted); font-style: italic; }
+.rep .rform { margin-top: 4px; }
+.rform { flex-wrap: wrap; align-items: center; }
+.rform input { flex: 1 1 10rem; }
+.rform .btn, .rform .link { flex: none; white-space: nowrap; }
+.rline .anon { display: inline-flex; vertical-align: middle; margin-right: 6px; font-size: 13px; }
+.rline .anon::before { width: 18px; height: 18px; box-shadow: none; }
 .empty-r { color: var(--muted); font-size: 13px; }
 .rform { display: flex; gap: 8px; }
 .rform input { min-width: 0; border-radius: 999px; }

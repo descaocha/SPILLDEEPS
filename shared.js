@@ -9,7 +9,7 @@ window.MA = (function () {
   var DONE_LABEL = { kehilangan: "Sudah ketemu", ditemukan: "Sudah kembali" };
 
   var K = {
-    relate: "madinganon.relate", hidden: "madinganon.hidden", mine: "madinganon.mine", viewer: "madinganon.viewer",
+    relate: "madinganon.relate", hidden: "madinganon.hidden", mine: "madinganon.mine", myreplies: "madinganon.myreplies", viewer: "madinganon.viewer",
     rate: "madinganon.rate", theme: "madinganon.theme", session: "madinganon.modcode"
   };
 
@@ -38,7 +38,8 @@ window.MA = (function () {
     filter_social: "Jangan menulis akun media sosial atau kontak pribadi.",
     bad_text: "Panjang pesan tidak sesuai. Pesan 10 sampai 500 huruf, balasan 2 sampai 200 huruf.",
     bad_photo: "Foto tidak bisa diterima server. Coba foto yang lebih kecil.",
-    not_found: "Pesan ini sudah tidak ada atau belum disetujui.",
+    not_found: "Pesan atau balasan ini sudah tidak ada atau belum disetujui.",
+    too_deep: "Percakapan ini sudah terlalu dalam. Balas di tingkat yang lebih atas.",
     bad_cat: "Kategori tidak dikenal.", bad_fak: "Nama fakultas terlalu panjang.", bad_token: "Browser ini belum siap, muat ulang halaman."
   };
 
@@ -50,9 +51,12 @@ window.MA = (function () {
   function api(fn, args) {
     if (!configured()) return Promise.reject(new Error("Belum terhubung ke database. Isi config.js dulu."));
     var c = window.MA_CONFIG;
+    // Kunci baru (sb_publishable_...) hanya boleh di header apikey. Kunci lama "anon" (eyJ...) adalah JWT dan boleh juga di Authorization.
+    var headers = { "Content-Type": "application/json", apikey: c.SUPABASE_ANON_KEY };
+    if (/^eyJ/.test(c.SUPABASE_ANON_KEY)) headers.Authorization = "Bearer " + c.SUPABASE_ANON_KEY;
     return fetch(c.SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/rpc/" + fn, {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey: c.SUPABASE_ANON_KEY, Authorization: "Bearer " + c.SUPABASE_ANON_KEY },
+      headers: headers,
       body: JSON.stringify(args || {})
     }).then(function (r) {
       return r.text().then(function (t) {

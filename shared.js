@@ -18,6 +18,23 @@ window.MA = (function () {
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   var fmt = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" });
   function dateLabel(iso) { return fmt.format(new Date(iso + "T00:00:00")); }
+  // Waktu relatif ("2 jam lalu"). Kalau server belum mengirim waktu lengkap, pakai tanggal biasa.
+  function timeAgo(ts, iso) {
+    var t = ts ? new Date(ts).getTime() : NaN;
+    if (isNaN(t)) return iso ? dateLabel(iso) : "";
+    var m = Math.floor((Date.now() - t) / 60000);
+    if (m < 1) return "baru saja";
+    if (m < 60) return m + " menit lalu";
+    var j = Math.floor(m / 60);
+    if (j < 24) return j + " jam lalu";
+    var d = Math.floor(j / 24);
+    if (d < 7) return d + " hari lalu";
+    return iso ? dateLabel(iso) : new Date(t).toLocaleDateString("id-ID");
+  }
+  function fullTime(ts) {
+    var d = ts ? new Date(ts) : null;
+    return d && !isNaN(d) ? d.toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" }) : "";
+  }
   function randomToken() {
     var a = new Uint8Array(24);
     (window.crypto || window.msCrypto).getRandomValues(a);
@@ -92,7 +109,7 @@ window.MA = (function () {
   }
 
   return {
-    FAK: FAK, CATS: CATS, DONE_LABEL: DONE_LABEL, K: K, load: load, save: save, esc: esc, dateLabel: dateLabel,
+    FAK: FAK, CATS: CATS, DONE_LABEL: DONE_LABEL, K: K, load: load, save: save, esc: esc, dateLabel: dateLabel, timeAgo: timeAgo, fullTime: fullTime,
     randomToken: randomToken, viewerId: viewerId, configured: configured, api: api, initTheme: initTheme
   };
 })();

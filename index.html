@@ -23,28 +23,29 @@
 <div class="wrap">
   <header class="top">
     <button type="button" class="themebtn" id="themeBtn" aria-pressed="false">Mode gelap</button>
-    <h1>SPILL DEEPS!!!</h1>
-    <button class="btn jump" id="jumpBtn" type="button">Tulis pesan</button>
+    <h1>Mading Anon</h1>
   </header>
 
   <div class="layout">
     <main>
       <h2 class="panel-title">Pesan terbaru</h2>
-      <input type="search" id="q" class="search" placeholder="Cari pesan, misalnya helm atau kunci" aria-label="Cari pesan">
-      <div class="filters" id="catFilters" role="group" aria-label="Filter kategori"></div>
-      <div class="sortrow">
-        <label for="sortBy">Urutkan</label>
-        <select id="sortBy">
+      <div class="toolbar">
+        <input type="search" id="q" class="search" placeholder="Cari pesan, misalnya helm atau kunci" aria-label="Cari pesan">
+        <select id="sortBy" class="sortsel" aria-label="Urutkan pesan">
           <option value="new">Terbaru</option>
-          <option value="relate">Paling banyak relate</option>
+          <option value="relate">Paling relate</option>
         </select>
-        <label class="chk"><input type="checkbox" id="hideDone"> Sembunyikan yang sudah ketemu</label>
       </div>
+      <div class="filters" id="catFilters" role="group" aria-label="Filter kategori"></div>
+      <label class="chk"><input type="checkbox" id="hideDone"> Sembunyikan yang sudah ketemu</label>
       <ul class="list" id="list"></ul>
     </main>
 
-    <aside class="formbox" id="formbox">
-      <h2 class="panel-title">Tulis pesan</h2>
+    <aside class="formbox" id="formbox" aria-label="Tulis pesan">
+      <div class="sheet-head">
+        <h2 class="panel-title">Tulis pesan</h2>
+        <button type="button" class="sheet-close" id="sheetClose" aria-label="Tutup form">&times;</button>
+      </div>
       <form id="postForm" novalidate>
         <label for="fCat">Kategori
           <select id="fCat"></select>
@@ -97,19 +98,21 @@
       </ul>
     </details>
     <details>
-      <summary>Tentang SPILL DEEPS</summary>
-      <p>SPILL DEEPS adalah tugas kuliah dan tidak berafiliasi dengan universitas, fakultas, atau akun menfess mana pun. Untuk kehilangan karena pencurian atau kejadian serius, lapor langsung ke satpam fakultas atau pihak berwenang.</p>
+      <summary>Tentang Mading Anon</summary>
+      <p>Mading Anon adalah tugas kuliah dan tidak berafiliasi dengan universitas, fakultas, atau akun menfess mana pun. Untuk kehilangan karena pencurian atau kejadian serius, lapor langsung ke satpam fakultas atau pihak berwenang.</p>
     </details>
   </section>
 
   <footer>
-    <div class="wordmark" aria-hidden="true">SPILL DEEPS</div>
+    <div class="wordmark" aria-hidden="true">Mading Anon</div>
     <div class="footcols">
-      <p>SPILL DEEPS adalah tugas kuliah. Kalau kamu sedang tidak baik-baik saja, bicaralah dengan orang yang kamu percaya atau layanan konseling kampusmu. Kalau barangmu dicuri, lapor ke satpam fakultas dan polisi.</p>
+      <p>Mading Anon adalah tugas kuliah. Kalau kamu sedang tidak baik-baik saja, bicaralah dengan orang yang kamu percaya atau layanan konseling kampusmu. Kalau barangmu dicuri, lapor ke satpam fakultas dan polisi.</p>
       <p class="footlinks"><button type="button" class="link" id="rulesBtn">Lihat aturan dan privasi</button><a href="moderator.html">Moderator</a></p>
     </div>
   </footer>
 </div>
+<button type="button" class="fab" id="fab" aria-haspopup="dialog" aria-controls="formbox"><span aria-hidden="true">+</span> Tulis pesan</button>
+<div class="backdrop" id="backdrop" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script src="config.js"></script>
 <script src="shared.js"></script>
